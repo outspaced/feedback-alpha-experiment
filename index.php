@@ -74,7 +74,7 @@ $(document).ready(function() {
 <?php
 
 try {
-    $pdo = new PDO("mysql:host=localhost;dbname=feedback_alpha", 'feedback_alpha', 'feedback_alpha');
+    $pdo = new PDO("mysql:host=".getenv('FA_DB_HOST').";dbname=".getenv('FA_DB_DBNAME'), getenv('FA_DB_USERNAME'), getenv('FA_DB_PASSWORD'));
 } catch(PDOException $e) {
     exit($e->getMessage());
 }
