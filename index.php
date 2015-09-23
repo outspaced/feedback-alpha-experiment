@@ -129,20 +129,13 @@ if ($_POST) {
             with it, or even just a couple of otherwise-unconnected words that fit with it.</p>
 
         <h3>Do I need to log in with Facebook?</h3>
-        <p>Yeah.  Sorry.  <a href="alex.brims@gmail.com">Email me</a> if you hate this.</p>
+        <p>Yeah.  Sorry.  It will collect your email address, but obviously I won't do anything evil with it.  <a href="alex.brims@gmail.com">Email me</a> if you really hate this.</p>
 
     </div>
 </div>
 
 <div class="container" id="review-container">
     <div id="review-form" class="col-md-8">
-        <?php if ( false and ! isset($_SESSION['user_email'])): ?>
-            <div id="callout-type-b-i-elems" class="bs-callout bs-callout-info">
-                <h3>What is this?</h3>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum sodales faucibus dictum. Donec ut dolor volutpat, finibus est id, vehicula purus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Quisque feugiat ac dui vitae blandit. Donec porttitor commodo tellus vel laoreet. Ut eros metus, pretium at justo feugiat, lobortis pretium nulla. Pellentesque iaculis nibh at tortor sagittis commodo. Vivamus imperdiet auctor enim ac consectetur. Pellentesque non quam ac nisl porta posuere. Donec in dignissim lectus. Nulla id massa a eros malesuada vulputate. Aliquam vel orci nisl. Praesent quis ultricies odio. Aenean aliquet leo vitae quam tincidunt ultricies. Donec quis lorem quis enim facilisis interdum nec sit amet lectus. Donec imperdiet, urna eget sagittis consequat, lacus eros sagittis elit, vel blandit nunc eros in lacus.
-            </div>
-        <?php endif; ?>
-
         <h3>Add review</h3>
         <form method="post">
             <div class="form-group">
