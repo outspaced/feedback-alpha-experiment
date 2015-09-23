@@ -94,6 +94,8 @@ if ($_POST) {
 
     $insert = array_replace($insert, $_POST);
 
+    mail(getenv('FA_CONFIRM_EMAIL'), 'Feedback Alpha submission', print_r($insert, true));
+
     $query = "INSERT INTO
         review (user_name, user_email, artist, album, review, created_at)
     VALUES
@@ -202,7 +204,7 @@ if (isset($_SESSION['user_email'])) {
                 percussive edge.  Excellent.</p>
         </div>
         <div id="callout-type-b-i-elems" class="bs-callout bs-callout-default">
-            <h4>??? - ???</h4>
+            <h4>The Go! Team - Thunder, Lightning, Strike</h4>
             <p>I am pretty sure that listening to this album gives you super powers</p>
         </div>
         <div id="callout-type-b-i-elems" class="bs-callout bs-callout-default">
@@ -211,12 +213,12 @@ if (isset($_SESSION['user_email'])) {
         </div>
         <div id="callout-type-b-i-elems" class="bs-callout bs-callout-default">
             <h4>Goldie - Timeless</h4>
-            <p>Soulful waves and dark atmospheres wrapped around hyperactive and complex breakbeats.  Still
-                sounds fresh today.</p>
+            <p>Soulful waves and dark atmospheres wrapped around hyperactive and complex breakbeats.  Today it still sounds
+                fresh, menacing, and beautiful.</p>
         </div>
         <div id="callout-type-b-i-elems" class="bs-callout bs-callout-default">
             <h4>The Cure - Disintigration</h4>
-            <p>Somehow desolate & imposing, claustrophobic & paranoid, while remaining an album filled of killer pop tunes</p>
+            <p>An album that is desolate, paranoid, and claustrophobic, but somehow still filled with killer pop tunes</p>
         </div>
     </div>
 </div>
