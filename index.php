@@ -89,12 +89,12 @@ if ($_POST) {
         'artist' => null,
         'album' => null,
         'review' => null,
-        'created_at' => date('Y-m-d h:i:s')
+        'created_at' => date('Y-m-d H:i:s')
     ];
 
     $insert = array_replace($insert, $_POST);
 
-    mail(getenv('FA_CONFIRM_EMAIL'), 'Feedback Alpha submission', print_r($insert, true));
+    mail(getenv('FA_CONFIRM_EMAIL'), 'Feedback Alpha submission from '.$insert['user_email'], print_r($insert, true));
 
     $query = "INSERT INTO
         review (user_name, user_email, artist, album, review, created_at)
