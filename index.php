@@ -1,4 +1,20 @@
-<?php session_start(); ini_set('display_errors', true); ?>
+<?php
+session_start();
+ini_set('display_errors', true);
+require_once('vendor/autoload.php');
+
+$fb = new Facebook\Facebook([
+  'app_id' => getenv('FB_APP_ID'),
+  'app_secret' => getenv('FB_APP_SECRET'),
+  'default_graph_version' => 'v2.4',
+  //'default_access_token' => '{access-token}', // optional
+]);
+
+// Use one of the helper classes to get a Facebook\Authentication\AccessToken entity.
+$helper = $fb->getRedirectLoginHelper();
+$accessToken = $helper->getAccessToken();
+$loginUrl = $helper->getLoginUrl('http://feedback-alpha.outspaced.com/', ['email', 'public_profile']);
+?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -11,65 +27,8 @@
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
     <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
 
-    <style>
-        #review-container {
-            display: none;
-        }
-    </style>
 </head>
 <body>
-<script>
-function statusChangeCallback(response) {
-
-    console.log(response.status);
-    if (response.status === 'connected') {
-
-        $('#login-container').hide();
-        $('#review-container').show();
-
-        FB.api('/me?fields=name,email', function(response) {
-            $('#user_name').val(response.name);
-            $('#user_email').val(response.email);
-        });
-    }
-}
-
-function checkLoginState() {
-    FB.getLoginStatus(function(response) {
-        statusChangeCallback(response);
-    });
-}
-
-window.fbAsyncInit = function() {
-    FB.init({
-        appId      : '697975330344414',
-        cookie     : true,
-        xfbml      : true,
-        version    : 'v2.2'
-    });
-
-    FB.getLoginStatus(function(response) {
-        statusChangeCallback(response);
-    });
-};
-
-(function(d, s, id) {
-    var js, fjs = d.getElementsByTagName(s)[0];
-    if (d.getElementById(id)) return;
-    js = d.createElement(s); js.id = id;
-    js.src = "//connect.facebook.net/en_US/sdk.js";
-    fjs.parentNode.insertBefore(js, fjs);
-}(document, 'script', 'facebook-jssdk'));
-
-
-$(document).ready(function() {
-    $('#facebook-logout').click(function() {
-        FB.logout(function(response) { location.reload(); } );
-    });
-});
-</script>
-
-
 
 <?php
 
@@ -107,14 +66,32 @@ if ($_POST) {
     header("Location: /");
     die();
 }
-?>
 
+try {
+
+    if ( ! empty($accessToken)) {
+        $response = $fb->get('/me', $accessToken);
+
+        $me = $response->getGraphUser();
+        echo 'Logged in as ' . $me->getName();
+    }
+} catch(Facebook\Exceptions\FacebookResponseException $e) {
+  // When Graph returns an error
+  echo 'Graph returned an error: ' . $e->getMessage();
+  exit;
+} catch(Facebook\Exceptions\FacebookSDKException $e) {
+  // When validation fails or other local issues
+  echo 'Facebook SDK returned an error: ' . $e->getMessage();
+  exit;
+}
+
+
+if ( ! isset($me)):
+?>
 <div class="container" id="login-container">
     <div id="callout-type-b-i-elems" class="bs-callout bs-callout-info">
 
-        <fb:login-button size="large" scope="public_profile,email" onlogin="checkLoginState();">
-            Login with Facebook
-        </fb:login-button>
+        <a href="<?= $loginUrl ?>"><img src="img/login_with_facebook.png"/></a>
 
         <h3>What is this?</h3>
         <p>This is my very basic prototype for a micro-reviews service.  I just want to see if anyone has any interest in writing
@@ -130,10 +107,9 @@ if ($_POST) {
 
         <h3>Do I need to log in with Facebook?</h3>
         <p>Yeah.  Sorry.  It will collect your email address, but obviously I won't do anything evil with it.  <a href="alex.brims@gmail.com">Email me</a> if you really hate this.</p>
-
     </div>
 </div>
-
+<?php else: ?>
 <div class="container" id="review-container">
     <div id="review-form" class="col-md-8">
         <h3>Add review</h3>
@@ -214,6 +190,7 @@ if (isset($_SESSION['user_email'])) {
             <p>An album that is desolate, paranoid, and claustrophobic, but somehow still filled with killer pop tunes</p>
         </div>
     </div>
+<?php endif; ?>
 </div>
 </body>
 </html>
