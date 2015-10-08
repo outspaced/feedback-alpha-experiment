@@ -119,7 +119,8 @@ if ( ! isset($_SESSION['user_email'])):
             with it, or even just a couple of otherwise-unconnected words that fit with it.</p>
 
         <h3>Do I need to log in with Facebook?</h3>
-        <p>Yeah.  Sorry.  It will collect your email address, but obviously I won't do anything evil with it.  <a href="alex.brims@gmail.com">Email me</a> if you really hate this.</p>
+        <p>Yeah.  Sorry.  It will collect your email address, but obviously I won't do anything evil with it.
+        <a href="mailto:alex.brims@gmail.com">Email me</a> if you really hate this.</p>
     </div>
 </div>
 <?php else: ?>
