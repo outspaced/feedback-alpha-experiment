@@ -3,19 +3,84 @@ session_start();
 ini_set('display_errors', true);
 require_once('vendor/autoload.php');
 
+// LOGOUT
+if (isset($_GET['logout'])) {
+    session_destroy();
+    header("Location: /");
+    die();
+}
+
+// DATABASE CONNECTION
+try {
+    $pdo = new PDO("mysql:host=".getenv('FA_DB_HOST').";dbname=".getenv('FA_DB_DBNAME'), getenv('FA_DB_USERNAME'), getenv('FA_DB_PASSWORD'));
+} catch(PDOException $e) {
+    exit($e->getMessage());
+}
+
+// DATABASE INSERT
+if ($_POST) {
+
+    $insert = [
+        'user_name' => null,
+        'user_email' => null,
+        'artist' => null,
+        'album' => null,
+        'review' => null,
+        'created_at' => date('Y-m-d H:i:s')
+    ];
+
+    $data = array_merge($_POST, $_SESSION);
+    $insert = array_replace($insert, array_intersect_key($data, $insert));
+
+    mail(getenv('FA_CONFIRM_EMAIL'), 'Feedback Alpha submission from '.$insert['user_email'], print_r($insert, true));
+
+    $query = "INSERT INTO
+        review (user_name, user_email, artist, album, review, created_at)
+    VALUES
+        (:user_name, :user_email, :artist, :album, :review, :created_at)";
+
+    $stmt = $pdo->prepare($query);
+    $stmt->execute($insert);
+
+    header("Location: /");
+    die();
+}
+
+// FACEBOOK START
 $fb = new Facebook\Facebook([
   'app_id' => getenv('FB_APP_ID'),
   'app_secret' => getenv('FB_APP_SECRET'),
   'default_graph_version' => 'v2.4',
-  //'default_access_token' => '{access-token}', // optional
 ]);
 
-// Use one of the helper classes to get a Facebook\Authentication\AccessToken entity.
-$helper = $fb->getRedirectLoginHelper();
-$accessToken = $helper->getAccessToken();
-$loginUrl = $helper->getLoginUrl('http://feedback-alpha.outspaced.com/', ['email', 'public_profile']);
-?>
-<!DOCTYPE html>
+// FACEBOOK LOGIN
+try {
+    $helper      = $fb->getRedirectLoginHelper();
+    $accessToken = $helper->getAccessToken();
+    $loginUrl    = $helper->getLoginUrl('http://feedback-alpha.outspaced.com/', ['email', 'public_profile']);
+
+    // Actually log in
+    if ( ! empty($accessToken)) {
+        $response = $fb->get('/me?fields=name,email', $accessToken);
+
+        $me = $response->getGraphUser();
+
+        $_SESSION['user_email'] = $me->getField('email');
+        $_SESSION['user_name'] = $me->getName();
+
+        header("Location: /");
+        die();
+    }
+
+} catch(Facebook\Exceptions\FacebookSDKException $e) {
+    header("Location: /");
+    die();
+} catch(Facebook\Exceptions\FacebookResponseException $e) {
+    header("Location: /");
+    die();
+}
+
+?><!DOCTYPE html>
 <html>
 <head>
     <title>Feedback Alpha</title>
@@ -32,61 +97,9 @@ $loginUrl = $helper->getLoginUrl('http://feedback-alpha.outspaced.com/', ['email
 
 <?php
 
-try {
-    $pdo = new PDO("mysql:host=".getenv('FA_DB_HOST').";dbname=".getenv('FA_DB_DBNAME'), getenv('FA_DB_USERNAME'), getenv('FA_DB_PASSWORD'));
-} catch(PDOException $e) {
-    exit($e->getMessage());
-}
-
-if ($_POST) {
-
-    $_SESSION['user_email'] = $_POST['user_email'];
-
-    $insert = [
-        'user_name' => null,
-        'user_email' => null,
-        'artist' => null,
-        'album' => null,
-        'review' => null,
-        'created_at' => date('Y-m-d H:i:s')
-    ];
-
-    $insert = array_replace($insert, $_POST);
-
-    mail(getenv('FA_CONFIRM_EMAIL'), 'Feedback Alpha submission from '.$insert['user_email'], print_r($insert, true));
-
-    $query = "INSERT INTO
-        review (user_name, user_email, artist, album, review, created_at)
-    VALUES
-        (:user_name, :user_email, :artist, :album, :review, :created_at)";
-
-    $stmt = $pdo->prepare($query);
-    $stmt->execute($insert);
-
-    header("Location: /");
-    die();
-}
-
-try {
-
-    if ( ! empty($accessToken)) {
-        $response = $fb->get('/me', $accessToken);
-
-        $me = $response->getGraphUser();
-        echo 'Logged in as ' . $me->getName();
-    }
-} catch(Facebook\Exceptions\FacebookResponseException $e) {
-  // When Graph returns an error
-  echo 'Graph returned an error: ' . $e->getMessage();
-  exit;
-} catch(Facebook\Exceptions\FacebookSDKException $e) {
-  // When validation fails or other local issues
-  echo 'Facebook SDK returned an error: ' . $e->getMessage();
-  exit;
-}
 
 
-if ( ! isset($me)):
+if ( ! isset($_SESSION['user_email'])):
 ?>
 <div class="container" id="login-container">
     <div id="callout-type-b-i-elems" class="bs-callout bs-callout-info">
@@ -124,7 +137,7 @@ if ( ! isset($me)):
             </div>
             <div class="form-group">
                 <label for="album">Review</label>
-                <input type="text" class="form-control" id="review" name="review" placeholder="Review" required>
+                <textarea class="form-control" rows="3"  id="review" name="review" placeholder="Review" required></textarea>
             </div>
 
             <input type="hidden" name="user_name" id="user_name" value=""/>
@@ -132,7 +145,7 @@ if ( ! isset($me)):
 
             <p><button type="submit" class="btn btn-primary">Submit</button></p>
         </form>
-        <p><button class="btn btn-danger" id="facebook-logout">Log out</button></p>
+        <p><a href="/?logout=hellyeah" class="btn btn-danger" id="facebook-logout" role="button">Log out</a></p>
 
 <?php
 if (isset($_SESSION['user_email'])) {
