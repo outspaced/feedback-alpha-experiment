@@ -1,11 +1,26 @@
 <?php
+/**
+ * It's a quick-and-dirty script, don't judge me!
+ */
 session_start();
 ini_set('display_errors', true);
 require_once('vendor/autoload.php');
 
+// LOG
+$log = new Monolog\Logger('log');
+$logFileName = 'logs/'.date('Y-m-d').'.log';
+$log->pushHandler(new Monolog\Handler\StreamHandler($logFileName, Monolog\Logger::DEBUG));
+
+if (empty($_GET) && empty($_POST) && empty($_SESSION)) {
+    $log->addDebug('Access: '.$_SERVER['REMOTE_ADDR'].' / '. $_SERVER['HTTP_USER_AGENT'], [session_id()]);
+}
+
 // LOGOUT
 if (isset($_GET['logout'])) {
+    $log->addDebug('Logout: '.$_SERVER['REMOTE_ADDR'].' / '. $_SERVER['HTTP_USER_AGENT'], [session_id()]);
+
     session_destroy();
+    session_regenerate_id(true);
     header("Location: /");
     die();
 }
@@ -31,6 +46,8 @@ if ($_POST) {
 
     $data = array_merge($_POST, $_SESSION);
     $insert = array_replace($insert, array_intersect_key($data, $insert));
+
+    $log->addDebug('Insert: '.print_r($insert, true), [session_id()]);
 
     mail(getenv('FA_CONFIRM_EMAIL'), 'Feedback Alpha submission from '.$insert['user_email'], print_r($insert, true));
 
@@ -67,6 +84,9 @@ try {
 
         $_SESSION['user_email'] = $me->getField('email');
         $_SESSION['user_name'] = $me->getName();
+        $_SESSION['user_id'] = $me->getId();
+
+        $log->addDebug('Facebook login: '.print_r($_SESSION, true), [session_id()]);
 
         header("Location: /");
         die();
