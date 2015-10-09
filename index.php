@@ -138,6 +138,14 @@ if ( ! isset($_SESSION['user_email'])):
         <p>Whatever you want.  It could be about what the album sounds like, how it makes you feel, memories you associate
             with it, or even just a couple of otherwise-unconnected words that fit with it.</p>
 
+        <h3>What happens with the reviews I write?</h3>
+        <p>Right now I'm just trying to collect information, I won't be publishing anything you submit anywhere
+            without your permission.</p>
+
+        <h3>I don't want to write any reviews</h3>
+        <p>No problem - but if you know anyone who might be interested then please do forward it on to them.  Also
+            if you have any feedback or questions then please <a href="mailto:alex.brims@gmail.com">let me know</a></p>
+
         <h3>Do I need to log in with Facebook?</h3>
         <p>Yeah.  Sorry.  It will collect your email address, but obviously I won't do anything evil with it.
         <a href="mailto:alex.brims@gmail.com">Email me</a> if you really hate this.</p>
